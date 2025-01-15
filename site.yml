@@ -1,0 +1,4 @@
+- hosts: windows_servers
+  gather_facts: true
+  roles:
+    - postgresql

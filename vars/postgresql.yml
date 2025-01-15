@@ -1,0 +1,5 @@
+postgresql_version: "9.6"
+postgresql_install_path: "C:\\Program Files\\PostgreSQL\\{{ postgresql_version }}"
+postgresql_data_path: "C:\\PostgreSQL\\{{ postgresql_version }}\\data"
+postgresql_password: "{{ lookup('env', 'POSTGRES_PASSWORD') | default('secure_password', true) }}"
+postgresql_port: 5432

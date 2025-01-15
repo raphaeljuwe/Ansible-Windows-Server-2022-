@@ -1,0 +1,44 @@
+---
+- name: Install PostgreSQL 9.6 on Windows 2022 Server
+  hosts: windows_servers
+  gather_facts: yes
+  vars:
+    postgresql_version: "9.6"
+    postgresql_install_path: "C:\\Program Files\\PostgreSQL\\9.6"
+    postgresql_data_path: "C:\\PostgreSQL\\9.6\\data"
+    postgresql_password: "your_secure_password_here"
+
+  tasks:
+    - name: Download PostgreSQL 9.6 installer
+      win_get_url:
+        url: "https://get.enterprisedb.com/postgresql/postgresql-{{ postgresql_version }}.0-1-windows-x64.exe"
+        dest: "C:\\Windows\\Temp\\postgresql-{{ postgresql_version }}.exe"
+
+    - name: Install PostgreSQL 9.6
+      win_package:
+        path: "C:\\Windows\\Temp\\postgresql-{{ postgresql_version }}.exe"
+        arguments: >
+          --mode unattended
+          --prefix "{{ postgresql_install_path }}"
+          --datadir "{{ postgresql_data_path }}"
+          --superpassword "{{ postgresql_password }}"
+          --serverport 5432
+        state: present
+        creates_path: "{{ postgresql_install_path }}\\bin\\psql.exe"
+
+    - name: Add PostgreSQL bin directory to system PATH
+      win_path:
+        elements:
+          - "{{ postgresql_install_path }}\\bin"
+        state: present
+
+    - name: Ensure PostgreSQL service is running
+      win_service:
+        name: postgresql-x64-9.6
+        state: started
+        start_mode: auto
+
+    - name: Remove PostgreSQL installer
+      win_file:
+        path: "C:\\Windows\\Temp\\postgresql-{{ postgresql_version }}.exe"
+        state: absent

@@ -1,0 +1,35 @@
+---
+- name: Download PostgreSQL installer
+  win_get_url:
+    url: "https://get.enterprisedb.com/postgresql/postgresql-{{ postgresql_version }}.0-1-windows-x64.exe"
+    dest: "C:\\Windows\\Temp\\postgresql-{{ postgresql_version }}.exe"
+    force: no
+
+- name: Install PostgreSQL
+  win_package:
+    path: "C:\\Windows\\Temp\\postgresql-{{ postgresql_version }}.exe"
+    arguments: >
+      --mode unattended
+      --prefix "{{ postgresql_install_path }}"
+      --datadir "{{ postgresql_data_path }}"
+      --superpassword "{{ postgresql_password }}"
+      --serverport "{{ postgresql_port }}"
+    state: present
+    creates_path: "{{ postgresql_install_path }}\\bin\\psql.exe"
+
+- name: Add PostgreSQL bin directory to system PATH
+  win_path:
+    elements:
+      - "{{ postgresql_install_path }}\\bin"
+    state: present
+
+- name: Ensure PostgreSQL service is running
+  win_service:
+    name: "postgresql-x64-{{ postgresql_version }}"
+    state: started
+    start_mode: auto
+
+- name: Remove PostgreSQL installer
+  win_file:
+    path: "C:\\Windows\\Temp\\postgresql-{{ postgresql_version }}.exe"
+    state: absent
